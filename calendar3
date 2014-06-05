@@ -1,0 +1,43 @@
+# calendar:	version 5 -- today and tomorrow; on Fridays, mails
+#               schedule for Sat, Sun, & Mon too; handles Leap Years.
+awk <calendata '
+BEGIN {
+      x = "Jan 31 Feb 28 Mar 31 Apr 30 May 31 Jun 30 " \
+      	  "Jul 31 Aug 31 Sep 30 Oct 31 Nov 30 Dec 31 Jan 31"
+      split(x, data)
+      for (i = 1; i < 24; i+=2) {
+      	  days[data[i]] = data[i+1]
+	  nextmon[data[i]] = data[i+2]
+      }
+
+#     Specify date for debugging
+#      split("'"Fri Feb 28 16:31:41 PDT 2000"'", date)
+      split("'"`date`"'", date)
+
+      dayOfWeek = date[1]
+      year = date[6]
+
+      # filter on leap year:
+      if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0) ) {
+          days["Feb"] = 29
+      }
+
+      mon1 = date[2]; day1 = date[3]
+      mon2 = mon1; day2 = day1 + 1
+      if (day1 >= days[mon1]) {
+      	 day2 = 1
+	 mon2 = nextmon[mon1]
+      }
+      mon3 = mon2; day3 = day2 + 1
+      if (day2 >= days[mon2]) {
+      	 day3 = 1
+	 mon3 = nextmon[mon2]
+      }
+      mon4 = mon3; day4 = day3 + 1
+      if (day3 >= days[mon3]) {
+      	 day4 = 1
+	 mon4 = nextmon[mon3]
+      }
+}
+$1 == mon1 && $2 == day1 || $1 == mon2 && $2 == day2 || dayOfWeek == "Fri" && $1 == mon3 && $2 == day3 || dayOfWeek == "Fri" && $1 == mon4 && $2 == day4
+'

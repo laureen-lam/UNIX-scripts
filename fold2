@@ -1,0 +1,62 @@
+# fold:   fold long lines, splitting at blanks or tabs
+sed 's/	/        /g' $* |    # convert tabs to 8 spaces
+awk '                            # process each line n individually
+BEGIN {
+    N = 10                        # folds at column 20
+    for (i = 1; i <= N; i++)      # make a string of blanks
+        blanks = blanks " "
+}
+{   if ((n = length($0)) <= N)    # n is the length of unprocessed text
+        print;                    # Does not overflow line, just print it
+    else {                     
+        # line is too long, find out where to break
+        goodN = N;             # goodN = index of where to break
+        for (i = 1; n >= N; n -= chunkLength) {      # i = print from here in line
+#	    printf " n = %d\n", n;
+            # Find a good place to split, starting at N (the tail part)
+#	    printf "goodN guess = %d\n", goodN
+            testN = (i-1)+N           # the index of the 1st char is 1 (not 0)
+
+	    while ( substr($0, testN, 1) != " " &&
+		    substr($0, testN, 1) != "     ") {
+		
+#               printf "checking substr: %s\n", substr($0, testN, 1)
+                testN -= 1;
+
+		# stop if we go past the start
+                if (testN == i-1) {
+                    testN = (i-1)+N;
+#		    printf "ran past start, testN = %d\n", testN
+                    break;
+                }
+            }
+
+            goodN = testN;
+#	    printf "Found goodN by searching backwards = %d\n", goodN
+
+	    chunkLength = goodN - i +1
+#	    printf "chunkLength = %d\n", chunkLength
+	    
+	    # right-justify and print
+	    # substr() usage: substr(text, start index, # chars to print starting at the index -- this can be 0)
+            if (i != 1)
+		printf "%s%s\\\n", substr(blanks,1,N-(chunkLength)), substr($0,i,chunkLength)
+	    else
+		printf "%s\\\n", substr($0,i,chunkLength)
+ #           printf "i = %s\n", i
+            i += chunkLength;
+#	    printf " n = %d\n", n;
+	    
+
+        }
+	# print last chunk of text
+	# how much text do we have left to print?
+	leftoverLen = length($0) - i+1
+#	printf "goodN = %d\n", goodN
+#	printf "i = %s\n", i
+
+	printf "%s%s\n", substr(blanks,1,N-leftoverLen), substr($0,i,leftoverLen)
+
+    }
+} '
+

@@ -1,0 +1,2 @@
+# change the mode of a file (or files) to executable
+chmod u+x $*
