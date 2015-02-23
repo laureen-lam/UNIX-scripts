@@ -1,0 +1,67 @@
+# which cmd:	which cmd in PATH is executed,
+#		-a prints all matching executable files in PATH
+#               identifies shell built-ins if cmd not found as a file
+#               prints an error message if file not found
+
+opath=$PATH
+PATH=/bin:/usr/bin
+
+# 0 args = error
+case $# in
+0)   echo 'Usage: which command' 1>&2; exit 2
+esac
+
+# Checks if first arg is a flag
+case "$1" in
+-a) match=false
+    for i in `echo $opath | sed 's/^:/.:/
+      	       	       	    s/::/:.:/g
+			    s/:$/:./
+			    s/:/ /g'`
+    do
+	if test -x $i/$2	# this is /bin/test or /usr/bin/test only
+	then
+		echo $i/$2
+    		match=true		# found it
+	fi
+    done
+
+    if "$match"
+    then
+       exit 0
+    fi
+    
+    # check if it is a shell built-in
+    if [ $(grep -w "$2" builtins.txt) ]
+    then
+        echo 'Built-in command'
+        exit 2
+    fi
+
+    echo 'Not found'
+    exit 1		# not found
+    ;;
+esac
+
+# Default if no '-a' switch found
+for i in `echo $opath | sed 's/^:/.:/
+      	       	       	    s/::/:.:/g
+			    s/:$/:./
+			    s/:/ /g'`
+do
+	if test -x $i/$1	# this is /bin/test or /usr/bin/test only
+	then
+		echo $i/$1
+		exit 0		# found it, exit right away
+	fi
+done
+
+# check if it is a shell built-in
+if [ $(grep -w "$2" builtins.txt) ]
+then
+    echo 'Built-in command'
+    exit 2
+fi
+
+echo 'Not found'
+exit 1		# not found
