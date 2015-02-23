@@ -1,0 +1,17 @@
+# watchfor:	watch for someone to log in
+
+PATH=/bin:/usr/bin
+
+case $# in
+0)   echo 'Usage: watchfor person' 1>&2; exit 1
+esac
+
+for i in $*
+do
+	
+done
+
+until who | egrep "$1"
+do
+	sleep 60
+done
