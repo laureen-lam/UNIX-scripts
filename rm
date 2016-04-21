@@ -1,0 +1,12 @@
+# Personal version of rm that moves files to a temporary directory
+# rather than deleting them; cleans out the directory while you
+# are asleep.
+
+DIRECTORY='RecycleBin'
+
+if [ ! -d "$HOME"/"$DIRECTORY" ]; then
+  mkdir "$HOME"/"$DIRECTORY"
+fi
+
+mv $* ~/RecycleBin/
+echo rm ~/RecycleBin/* | at 3am
